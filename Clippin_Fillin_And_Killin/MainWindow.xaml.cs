@@ -43,6 +43,11 @@ namespace Clippin_Fillin_And_Killin
         //default rectangle
         List<Point> Rectangle = new List<Point> { new Point(100, 100), new Point(300, 100), new Point(300, 300), new Point(100, 300) };
 
+
+        List<Edge> allEdges = new List<Edge>();
+        List<Bucket> ET = new List<Bucket>();
+        List<Bucket> AET = new List<Bucket>();
+
         #endregion
 
         #region Constructor
@@ -154,6 +159,9 @@ namespace Clippin_Fillin_And_Killin
                 
                 canvas.Children.Clear();
                 recordedPoly = new List<Point>();
+                List<Edge> allEdges = new List<Edge>();
+                List<Bucket> ET = new List<Bucket>();
+                List<Bucket> AET = new List<Bucket>();
                 List<Point> Base = new List<Point> {new Point(0,0),new Point(canvas.ActualWidth, 0), new Point(canvas.ActualWidth, canvas.ActualHeight),new Point(0, canvas.ActualHeight) };
                 ShowPolygon(Base, Brushes.White, Brushes.White,1d);
                 
@@ -161,10 +169,81 @@ namespace Clippin_Fillin_And_Killin
             
         }
 
+
+        public void GetAllEdges(List<Point> points)
+        {
+            for(int i =0; i< points.Count - 2; i++)
+            {
+                allEdges.Add(new Edge(points[i], points[i + 1]));
+            }
+
+        }
+        public void initialiseET(List<Edge> edges)
+        {
+            foreach(Edge edge in edges)
+            {
+                ET.Add(new Bucket(edge));
+            }
+        }
+
+
+
         private void fillButton_Click(object sender, RoutedEventArgs e)
         {
             ShowPolygon(recordedPoly, Brushes.White, Brushes.Black, 2d);
             Record = false;
+            GetAllEdges(recordedPoly);
+            initialiseET(allEdges);
+
+        
+        }
+
+        public double findTheSmallestY(List<Bucket> bucketList)
+        {
+            double y = bucketList[0].yMin;
+            foreach(Bucket bucket in bucketList)
+            {
+                y = Math.Min(y, bucket.yMin);
+            }
+
+            return y;
+        }
+
+        public Bucket findTheSmallestYOwner(List<Bucket> bucketList,double y)
+        {
+           
+            foreach (Bucket bucket in bucketList)
+            {
+                if(bucket.yMin == y )
+                {
+                    return bucket;
+                }
+            }
+
+            return bucketList[0];
+            
+        }
+
+        
+
+        public void fillPolygon()
+        {
+            double y = findTheSmallestY(ET);
+            Bucket smallestYowner = findTheSmallestYOwner(ET, y);
+            double x = smallestYowner.xMin;
+
+            while (AET.Count > 0 | ET.Count>0 )
+            {
+                AET.Add(smallestYowner);// move buckket
+                ET.Remove(smallestYowner);//move bucket
+                AET.OrderBy(o => o.xMin);//sort by x value
+               
+                foreach(Bucket bucket in AET)
+                {
+                    x += smallestYowner.slopeInverse; 
+                }
+              
+            }
 
 
         }

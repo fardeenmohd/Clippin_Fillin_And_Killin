@@ -8,25 +8,7 @@ namespace Clippin_Fillin_And_Killin
 {
     public static class SutherlandHodgman
     {
-        #region Class: Edge
-
-        /// <summary>
-        /// This represents a line segment
-        /// </summary>
-        private class Edge
-        {
-            public Edge(Point from, Point to)
-            {
-                this.From = from;
-                this.To = to;
-            }
-
-            public readonly Point From;
-            public readonly Point To;
-        }
-
-        #endregion
-
+        
         /// <summary>
         /// This clips the subject polygon against the clip polygon (gets the intersection of the two polygons)
         /// </summary>
@@ -35,7 +17,7 @@ namespace Clippin_Fillin_And_Killin
         /// http://en.wikipedia.org/wiki/Sutherland%E2%80%93Hodgman
         /// </remarks>
         /// <param name="subjectPoly">Can be concave or convex</param>
-        /// <param name="clipPoly">Must be convex</param>
+        /// <param name="recordedPoly">Must be convex</param>
         /// <returns>The intersection of the two polygons (or null)</returns>
         public static List<Point> GetIntersectedPolygon(List<Point> subjectPoly, List<Point> clipPoly)
         {
@@ -162,18 +144,7 @@ namespace Clippin_Fillin_And_Killin
 
             Vector c = line2From - line1From;
             double t = (c.X * direction2.Y - c.Y * direction2.X) / dotPerp;
-            //if (t < 0 || t > 1)
-            //{
-            //    return null;		//	lies outside the line segment
-            //}
-
-            //double u = (c.X * direction1.Y - c.Y * direction1.X) / dotPerp;
-            //if (u < 0 || u > 1)
-            //{
-            //    return null;		//	lies outside the line segment
-            //}
-
-            //	Return the intersection point
+       
             return line1From + (t * direction1);
         }
 
