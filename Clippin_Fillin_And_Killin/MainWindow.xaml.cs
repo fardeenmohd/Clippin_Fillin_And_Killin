@@ -172,7 +172,7 @@ namespace Clippin_Fillin_And_Killin
 
         public void GetAllEdges(List<Point> points)
         {
-            for(int i =0; i< points.Count - 2; i++)
+            for(int i =0; i< points.Count - 1; i++)
             {
                 allEdges.Add(new Edge(points[i], points[i + 1]));
             }
@@ -184,6 +184,14 @@ namespace Clippin_Fillin_And_Killin
             {
                 ET.Add(new Bucket(edge));
             }
+            ET.Sort(delegate (Bucket a, Bucket b)
+            {
+                if (a.yMin < b.yMin)
+                    return -1;
+                else if (a.yMin == b.yMin)
+                    return 0;
+                else return 1;
+            });
         }
 
 
@@ -194,6 +202,8 @@ namespace Clippin_Fillin_And_Killin
             Record = false;
             GetAllEdges(recordedPoly);
             initialiseET(allEdges);
+
+            fillPolygon();
 
         
         }
@@ -228,23 +238,107 @@ namespace Clippin_Fillin_And_Killin
 
         public void fillPolygon()
         {
-            double y = findTheSmallestY(ET);
-            Bucket smallestYowner = findTheSmallestYOwner(ET, y);
-            double x = smallestYowner.xMin;
-
-            while (AET.Count > 0 | ET.Count>0 )
+            double y = findTheSmallestY(ET) ;
+            Bucket temp = findTheSmallestYOwner(ET,y);
+           
+            while(ET.Count>0)
             {
-                AET.Add(smallestYowner);// move buckket
-                ET.Remove(smallestYowner);//move bucket
-                AET.OrderBy(o => o.xMin);//sort by x value
-               
-                foreach(Bucket bucket in AET)
+
+                foreach (Bucket eb in ET)
                 {
-                    x += smallestYowner.slopeInverse; 
+                    if (eb.yMin == y)
+                    {
+                        AET.Add(eb);
+
+                    }
                 }
-              
+
+             
+                AET.Sort(delegate (Bucket a, Bucket b)
+                {
+                    if (a.currentX < b.currentX)
+                        return -1;
+                    else if (a.currentX == b.currentX)
+                        return 0;
+                    else
+                        return 1;
+                });
+
+                for (int i = 0; i < AET.Count-1 ; i++)
+                {
+                    
+                        if (IsPointInPolygon(new Point(AET[i].currentX, y),recordedPoly.ToArray()) || IsPointInPolygon(new Point(AET[i + 1].currentX, y),recordedPoly.ToArray()))
+                        {
+                            DrawLine(new Point(AET[i].currentX, y), new Point(AET[i + 1].currentX, y));
+                        }
+                    
+                }
+
+
+                if (AET.Count > 0)
+                {
+                    AET.RemoveAll(bucket => bucket.yMax == y);
+                    ET.RemoveAll(bucket => bucket.yMax == y);
+
+                }
+
+                ++y;
+
+                for (int i = 0; i < AET.Count; i++)
+                {
+                       
+                    double slope = 0.0;
+                    slope = (AET[i].dy / AET[i].dx);
+                    
+                    AET[i].currentX += 1/slope;
+
+                }
+                
             }
 
+
+        }
+
+        public bool IsPointInPolygon(Point p ,Point[] poly )
+        {
+            Point p1, p2;
+
+            bool inside = false;
+
+            if (poly.Length < 3)
+            {
+                return inside;
+            }
+
+            Point oldPoint = new Point(
+            poly[poly.Length - 1].X, poly[poly.Length - 1].Y);
+
+            for (int i = 0; i < poly.Length; i++)
+            {
+                Point newPoint = new Point(poly[i].X, poly[i].Y);
+
+                if (newPoint.X > oldPoint.X)
+                {
+                    p1 = oldPoint;
+                    p2 = newPoint;
+                }
+                else
+                {
+                    p1 = newPoint;
+                    p2 = oldPoint;
+                }
+
+                if ((newPoint.X < p.X) == (p.X <= oldPoint.X)
+                && ((long)p.Y - (long)p1.Y) * (long)(p2.X - p1.X)
+                 < ((long)p2.Y - (long)p1.Y) * (long)(p.X - p1.X))
+                {
+                    inside = !inside;
+                }
+
+                oldPoint = newPoint;
+            }
+
+            return inside;
 
         }
 

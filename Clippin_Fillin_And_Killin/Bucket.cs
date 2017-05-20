@@ -11,22 +11,22 @@ namespace Clippin_Fillin_And_Killin
     {
         public Bucket(Edge edge)
         {
-            this.slopeInverse = (edge.To.X - edge.From.X) / (edge.To.Y - edge.From.Y);
-            this.yMax = Math.Max(edge.To.Y, edge.From.Y);
-            this.xMin = Math.Min(edge.To.X, edge.From.X);
-            this.yMin = Math.Min(edge.To.Y, edge.From.Y);
             this.dx = edge.To.X - edge.From.X;
             this.dy = edge.To.Y - edge.From.Y;
-            this.edge = edge;
+            this.yMax = Math.Max(edge.To.Y, edge.From.Y);
+            this.yMin = Math.Min(edge.To.Y, edge.From.Y);
+            this.startingX = edge.From.X;
+            this.currentX = startingX;
+           
+            
 
         }
         public double yMax;
-        public double xMin;
         public double yMin;
-        public double sign;
+        public double currentX { get; set; }
+        public double startingX { get; set; }
         public double dx;
         public double dy;
-        public double slopeInverse;
-        public Edge edge;
+      
     }
 }
